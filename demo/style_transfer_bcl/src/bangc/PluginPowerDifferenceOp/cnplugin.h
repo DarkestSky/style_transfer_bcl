@@ -1618,5 +1618,38 @@ cnmlStatus_t cnmlComputePluginBertSquadOpForward(
 /* cnmlPluginBertSquad operation end */
 /* ------------------------------------- */
 
+struct cnmlPluginPowerDifferenceOpParam{
+  int pow;
+  int dims_a;
+  cnmlCoreVersion_t core_version;
+};
+
+typedef cnmlPluginPowerDifferenceOpParam *cnmlPluginPowerDifferenceOpParam_t;
+
+cnmlStatus_t cnmlCreatePluginPowerDifferenceOpParam(
+  cnmlPluginPowerDifferenceOpParam_t *params,
+  int pow,
+  int dims_a,
+  cnmlCoreVersion_t core_version
+);
+
+cnmlStatus_t cnmlDestroyPluginPowerDifferenceOpParam(
+  cnmlPluginPowerDifferenceOpParam_t *params
+);
+
+cnmlStatus_t cnmlCreatePluginPowerDifferenceOp(
+  cnmlBaseOp_t *op,
+  cnmlTensor_t *pd_input_tensors,
+  int pow,
+  cnmlTensor_t *pd_output_tensors,
+  int len
+);
+
+cnmlStatus_t cnmlComputePluginPowerDifferenceOpForward(
+  cnmlBaseOp_t op,
+  void *inputs[],
+  void *outputs[],
+  cnrtQueue_t queue
+);
 
 #endif

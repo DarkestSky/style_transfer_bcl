@@ -20,22 +20,54 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *************************************************************************/
-// TODO：PowerDifference BCL单核实现
-__mlu_entry__ void PowerDifferenceKernel(...)
+
+#define ONELINE 256
+
+// PowerDifference BCL单核实现
+__mlu_entry__ void PowerDifferenceKernel(half* input1, half* input2, int32_t pow, half* output, int32_t len)
 {
   if (taskId > 0) return;
-  // TODO：循环条件判断
-  ---
-  // TODO：内存申请
-  ---
-  // TODO：For循环计算
-  for (int i = 0; i < ---; i++)
-  {
-    // TODO：拷入操作
-    __memcpy(---);
-    // TODO：实际计算部分
-    ---
-    // TODO：结果拷出操作
-    __memcpy(---);
+
+  // 分片处理
+  int32_t quotient = len / ONELINE;
+  int32_t rem = len % ONELINE;
+
+  // 申请内存
+  __nram__ half input1_nram[ONELINE];
+  __nram__ half input2_nram[ONELINE];
+  __nram__ half buffer[ONELINE];
+  __nram__ half output_nram[ONELINE];
+
+  // For循环计算
+  for (int i = 0; i < quotient; i++) {
+    // 写入 ONELINE 个输入值
+    __memcpy(input1_nram, input1 + i * ONELINE, ONELINE * sizeof(half), GDRAM2NRAM);
+    __memcpy(input2_nram, input2 + i * ONELINE, ONELINE * sizeof(half), GDRAM2NRAM);
+
+    // 做差
+    __bang_sub(buffer, input1_nram, input2_nram, ONELINE);
+    __memcpy(output_nram, buffer, ONELINE * sizeof(half), NRAM2NRAM);
+
+    for (int j=1; j<pow; j++) {
+      __bang_mul(output_nram, output_nram, buffer, ONELINE);
+    }
+
+    __memcpy(output + i * ONELINE, output_nram, ONELINE * sizeof(half), NRAM2GDRAM);
+  }
+
+  if (rem!=0) {
+    // 写入 rem 个输入值
+    __memcpy(input1_nram, input1 + quotient * ONELINE, rem * sizeof(half), GDRAM2NRAM);
+    __memcpy(input2_nram, input2 + quotient * ONELINE, rem * sizeof(half), GDRAM2NRAM);
+
+    // 做差
+    __bang_sub(buffer, input1_nram, input2_nram, rem);
+    __memcpy(output_nram, buffer, rem * sizeof(half), NRAM2NRAM);
+
+    for (int j=1; j<pow; j++) {
+      __bang_mul(output_nram, output_nram, buffer, rem);
+    }
+
+    __memcpy(output + quotient * ONELINE, output_nram, rem * sizeof(half), NRAM2GDRAM);
   }
 }

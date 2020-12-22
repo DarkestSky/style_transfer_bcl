@@ -29,8 +29,8 @@ extern "C" {
 
 typedef uint16_t half;
 
-// TODO：BCL接口定义
-void PowerDifferenceKernel(---);
+// BCL接口定义
+void PowerDifferenceKernel(half* input1, half* input2, int32_t pow, half* output, int32_t len);
 
 #ifdef __cplusplus
 }
