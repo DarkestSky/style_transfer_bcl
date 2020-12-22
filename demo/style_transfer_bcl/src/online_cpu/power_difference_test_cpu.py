@@ -6,11 +6,13 @@ import tensorflow as tf
 np.set_printoptions(suppress=True)
 from power_diff_numpy import *
 
-def power_difference_op(input_x,input_y,input_pow):
+def power_difference_op(input_x, input_y, input_pow):
     with tf.Session() as sess:
-      # TODO：完成TensorFlow接口调用
-      out = tf.power_difference(...)
-      return sess.run(out, feed_dict = {...})
+        x = tf.placeholder(tf.float32, name='x')
+        y = tf.placeholder(tf.float32, name='y')
+        pow_ = tf.placeholder(tf.float32, name="pow")
+        out = tf.power_difference(x, y, pow_)
+        return sess.run(out, feed_dict = {x:input_x, y:input_y, pow_:input_pow})
 
 def main():
     value = 256
