@@ -66,10 +66,15 @@ def run_ori_power_diff_pb():
         img = cv.imread(args.image)
         X = cv.resize(img, (256, 256))
         with tf.Session(config=config) as sess:
-            # TODO：完成PowerDifference Pb模型的推理
-            ...
+            sess.graph.as_default()
+            sess.run(tf.global_variables_initializer())
+
+            input_tensor1 = sess.graph.get_tensor_by_name('X_content:0')
+            input_tensor2 = sess.graph.get_tensor_by_name('moments_15/PowerDifference_z:0')
+            output_tensor = sess.graph.get_tensor_by_name('add_37:0')
+
             start_time = time.time()
-            ret =sess.run(...)
+            ret =sess.run(output_tensor, feed_dict={input_tensor1:[X], input_tensor2:2})
             end_time = time.time()
             print("C++ inference(CPU) time is: ",end_time-start_time)
             img1 = tf.reshape(ret,[256,256,3])
@@ -93,11 +98,16 @@ def run_numpy_pb():
         img = cv.imread(args.image)
         X = cv.resize(img, (256, 256))
         with tf.Session(config=config) as sess:
-            # TODO：完成Numpy版本 Pb模型的推理
-            ...
+            sess.graph.as_default()
+            sess.run(tf.global_variables_initializer())
+
+            input_tensor1 = sess.graph.get_tensor_by_name('X_content:0')
+            input_tensor2 = sess.graph.get_tensor_by_name('moments_15/PowerDifference:0')
+            output_tensor = sess.graph.get_tensor_by_name('add_37:0')
+
             start_time = time.time()
-            ...
-            ret = sess.run(...)
+            input_2 = power_diff_numpy(sess.graph.get_tensor_by_name('Conv2D_13:0').eval(feed_dict={input_tensor1:[X]}),sess.graph.get_tensor_by_name('moments_15/StopGradient:0').eval(feed_dict={input_tensor1:[X]}),2)
+            ret = sess.run(output_tensor, feed_dict={input_tensor1:[X], input_tensor2:input_2})
             end_time = time.time()
             print("Numpy inference(CPU) time is: ",end_time-start_time)
             img1 = tf.reshape(ret,[256,256,3])
